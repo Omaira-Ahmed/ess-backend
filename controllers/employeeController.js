@@ -1,24 +1,51 @@
-const pool = require("../config/db");
+const employeeModel = require("../models/employeeModel");
 
-exports.createEmployee = async (req, res) => {
+const createEmployee = async (req, res) => {
     try {
-        const {
-            user_id,
-            first_name,
-            last_name,
-            email
-        } = req.body;
 
-        const result = await pool.query(
-            `INSERT INTO employees (user_id, first_name, last_name, email)
-             VALUES ($1, $2, $3, $4)
-             RETURNING *`,
-            [user_id, first_name, last_name, email]
+        const employee = await employeeModel.createEmployee(req.body);
+
+        res.status(201).json({
+            message: "Employee created successfully",
+            employee
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            message: "Error creating employee"
+        });
+    }
+};
+
+const getEmployeeById = async (req, res) => {
+    try {
+
+        const employee = await employeeModel.getEmployeeById(
+            req.params.id
         );
 
-        res.status(201).json(result.rows[0]);
+        if (!employee) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        res.status(200).json(employee);
+
     } catch (err) {
+
         console.error(err);
-        res.status(500).json({ message: "Error creating employee" });
+
+        res.status(500).json({
+            message: "Error fetching employee"
+        });
     }
+};
+
+module.exports = {
+    createEmployee,
+    getEmployeeById
 };
