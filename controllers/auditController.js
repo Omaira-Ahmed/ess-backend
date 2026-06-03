@@ -1,44 +1,131 @@
-const model = require("../models/auditModel");
+require("dotenv").config();
 
-// ================= GET LEAVE LOGS =================
-const getLeaveLogs = async (req, res) => {
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const model = require("../models/userModel");
+const logger = require("../utils/logger");
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// ================= REGISTER =================
+const register = async (req, res) => {
     try {
-        const logs = await model.getLeaveLogs();
 
-        res.status(200).json({
-            message: "Leave logs fetched",
-            data: logs
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password required"
+            });
+        }
+
+        const existingUser =
+            await model.findUserByEmail(email);
+
+        if (existingUser) {
+            return res.status(400).json({
+                message: "User already exists"
+            });
+        }
+
+        const hashedPassword =
+            await bcrypt.hash(password, 10);
+
+        const user =
+            await model.createUser(
+                email,
+                hashedPassword
+            );
+
+        logger.info(
+            `User registered: ${email}`
+        );
+
+        res.status(201).json({
+            message: "User registered successfully",
+            data: user
         });
 
-    } catch (error) {
+    } catch (err) {
+
+        logger.error(err.message);
+
         res.status(500).json({
             message: "Server error",
-            error: error.message
+            error: err.message
         });
+
     }
 };
 
-// ================= EMPLOYEE HISTORY =================
-const getEmployeeHistory = async (req, res) => {
+// ================= LOGIN =================
+const login = async (req, res) => {
     try {
-        const { id } = req.params;
 
-        const history = await model.getEmployeeHistory(id);
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password required"
+            });
+        }
+
+        const user =
+            await model.findUserByEmail(email);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        const isMatch =
+            await bcrypt.compare(
+                password,
+                user.password_hash
+            );
+
+        if (!isMatch) {
+            return res.status(401).json({
+                message: "Invalid credentials"
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                user_id: user.user_id,
+                email: user.email,
+                role: user.role
+            },
+            JWT_SECRET,
+            {
+                expiresIn: "1d"
+            }
+        );
+
+        logger.info(
+            `User logged in: ${email}`
+        );
 
         res.status(200).json({
-            message: "Employee history fetched",
-            data: history
+            message: "Login successful",
+            token
         });
 
-    } catch (error) {
+    } catch (err) {
+
+        logger.error(err.message);
+
         res.status(500).json({
             message: "Server error",
-            error: error.message
+            error: err.message
         });
+
     }
 };
 
 module.exports = {
-    getLeaveLogs,
-    getEmployeeHistory
+    register,
+    login
 };

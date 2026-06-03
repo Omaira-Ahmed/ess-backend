@@ -1,40 +1,110 @@
-const express = require("express");
-
-const router = express.Router();
-
-const leaveApprovalController = require(
-    "../controllers/leaveApprovalController"
+const express =
+require(
+"express"
 );
 
-console.log("LEAVE APPROVAL ROUTES LOADED");
+const router =
+express.Router();
 
-// TEST ROUTE
-router.get("/test", (req, res) => {
-    res.send("Approval routes working");
-});
+const leaveApprovalController =
+require(
+"../controllers/leaveApprovalController"
+);
+
+const authMiddleware =
+require(
+"../middleware/authMiddleware"
+);
+
+const roleMiddleware =
+require(
+"../middleware/roleMiddleware"
+);
+
+console.log(
+"LEAVE APPROVAL ROUTES LOADED"
+);
+
+// TEST
+
+router.get(
+"/test",
+(req,res)=>{
+
+res.send(
+"Approval routes working"
+);
+
+}
+);
 
 // GET PENDING
+
 router.get(
-    "/pending/:managerId",
-    leaveApprovalController.getPendingRequests
+
+"/pending/:managerId",
+
+authMiddleware,
+
+roleMiddleware(
+["HR","Manager"]
+),
+
+leaveApprovalController
+.getPendingRequests
+
 );
 
 // APPROVE
+
 router.patch(
-    "/:applicationId/approve",
-    leaveApprovalController.approveLeave
+
+"/:applicationId/approve",
+
+authMiddleware,
+
+roleMiddleware(
+["HR","Manager"]
+),
+
+leaveApprovalController
+.approveLeave
+
 );
 
 // REJECT
+
 router.patch(
-    "/:applicationId/reject",
-    leaveApprovalController.rejectLeave
+
+"/:applicationId/reject",
+
+authMiddleware,
+
+roleMiddleware(
+["HR","Manager"]
+),
+
+leaveApprovalController
+.rejectLeave
+
 );
 
 // HISTORY
+
 router.get(
-    "/history/:applicationId",
-    leaveApprovalController.getApprovalHistory
+
+"/history/:applicationId",
+
+authMiddleware,
+
+roleMiddleware(
+["HR","Manager"]
+),
+
+leaveApprovalController
+.getApprovalHistory
+
 );
 
-module.exports = router;
+module.exports =
+router;

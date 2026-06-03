@@ -22,11 +22,9 @@ const cancelLeave = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("CANCEL ERROR:", err);
-
+        console.error(err);
         return res.status(500).json({
-            message: "Server error",
-            error: err.message
+            message: "Server error"
         });
     }
 };

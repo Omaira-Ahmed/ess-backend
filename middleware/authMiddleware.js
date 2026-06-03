@@ -1,41 +1,65 @@
+require("dotenv").config();
+
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "mysecretkey";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const authMiddleware = (req, res, next) => {
+
     try {
-        const authHeader = req.header("Authorization");
+
+        const authHeader =
+            req.header("Authorization");
 
         if (!authHeader) {
+
             return res.status(401).json({
-                message: "No token, access denied"
+                message: "No token provided"
             });
+
         }
 
-        const parts = authHeader.split(" ");
+        const parts =
+            authHeader.split(" ");
 
         if (parts.length !== 2) {
+
             return res.status(401).json({
-                message: "Invalid token format"
+                message:
+                "Invalid token format"
             });
+
         }
 
         const token = parts[1];
 
-        const verified = jwt.verify(token, JWT_SECRET);
+        const decoded =
+            jwt.verify(
+                token,
+                JWT_SECRET
+            );
 
-        console.log("DECODED USER:", verified); // 🔥 DEBUG
-
-        req.user = verified;
+        req.user = decoded;
 
         next();
 
-    } catch (err) {
-        return res.status(401).json({
-            message: "Invalid token",
-            error: err.message
-        });
     }
+
+    catch (err) {
+
+        return res.status(401).json({
+
+            message:
+            "Invalid or expired token",
+
+            error:
+            err.message
+
+        });
+
+    }
+
 };
 
-module.exports = authMiddleware;
+module.exports =
+authMiddleware;

@@ -1,24 +1,28 @@
-const leaveApprovalModel = require(
-    "../models/leaveApprovalModel"
-);
+const logger = require("../utils/logger");
+
+const service =
+require("../services/leaveApprovalService");
 
 // ================= GET PENDING =================
 const getPendingRequests = async (req, res) => {
     try {
-        const { managerId } = req.params;
+        const managerId = parseInt(req.params.managerId);
 
-        const requests =
-            await leaveApprovalModel.getPendingRequests(
-                managerId
-            );
+        const requests = await service.getPendingRequests(
+            managerId
+        );
 
-        res.status(200).json(requests);
+        res.status(200).json({
+            message: "Pending requests fetched",
+            data: requests
+        });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
 
         res.status(500).json({
-            message: "Server error"
+            message: "Server error",
+            error: error.message
         });
     }
 };
@@ -26,36 +30,26 @@ const getPendingRequests = async (req, res) => {
 // ================= APPROVE =================
 const approveLeave = async (req, res) => {
     try {
-        const { applicationId } = req.params;
+        const applicationId = parseInt(req.params.applicationId);
+        const remarks = req.body.remarks || "";
+        const userId = req.user.user_id;
 
-        const {
-            performed_by,
-            remarks
-        } = req.body;
-
-        const updated =
-            await leaveApprovalModel.updateLeaveStatus(
-                applicationId,
-                "APPROVED"
-            );
-
-        await leaveApprovalModel.insertActionLog(
+        const result = await service.approveLeave(
             applicationId,
-            "APPROVED",
-            performed_by,
+            userId,
             remarks
         );
 
         res.status(200).json({
             message: "Leave approved successfully",
-            data: updated
+            data: result
         });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
 
-        res.status(500).json({
-            message: "Server error"
+        res.status(400).json({
+            message: error.message
         });
     }
 };
@@ -63,36 +57,23 @@ const approveLeave = async (req, res) => {
 // ================= REJECT =================
 const rejectLeave = async (req, res) => {
     try {
-        const { applicationId } = req.params;
+        const applicationId = parseInt(req.params.applicationId);
+        const remarks = req.body.remarks || "";
+        const userId = req.user.user_id;
 
-        const {
-            performed_by,
-            remarks
-        } = req.body;
-
-        const updated =
-            await leaveApprovalModel.updateLeaveStatus(
-                applicationId,
-                "REJECTED"
-            );
-
-        await leaveApprovalModel.insertActionLog(
+        const result = await service.rejectLeave(
             applicationId,
-            "REJECTED",
-            performed_by,
+            userId,
             remarks
         );
 
-        res.status(200).json({
-            message: "Leave rejected",
-            data: updated
-        });
+        res.status(200).json(result);
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
 
-        res.status(500).json({
-            message: "Server error"
+        res.status(400).json({
+            message: error.message
         });
     }
 };
@@ -100,20 +81,24 @@ const rejectLeave = async (req, res) => {
 // ================= HISTORY =================
 const getApprovalHistory = async (req, res) => {
     try {
-        const { applicationId } = req.params;
+        const applicationId = parseInt(req.params.applicationId);
 
         const history =
-            await leaveApprovalModel.getApprovalHistory(
-                applicationId
-            );
+        await service.getApprovalHistory(
+            applicationId
+        );
 
-        res.status(200).json(history);
+        res.status(200).json({
+            message: "History fetched",
+            data: history
+        });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
 
         res.status(500).json({
-            message: "Server error"
+            message: "Server error",
+            error: error.message
         });
     }
 };

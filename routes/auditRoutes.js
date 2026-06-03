@@ -1,23 +1,43 @@
+console.log("Auth routes loaded");
+
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/auditController");
-const authMiddleware = require("../middleware/authMiddleware");
+const rateLimit = require("express-rate-limit");
 
-console.log("AUDIT ROUTES LOADED");
+const {
+    register,
+    login
+} = require("../controllers/authController");
 
-// ================= LEAVE LOGS =================
-router.get(
-    "/logs/leave",
-    authMiddleware,
-    controller.getLeaveLogs
+// ================= LOGIN RATE LIMITER =================
+
+const loginLimiter = rateLimit({
+
+    windowMs: 15 * 60 * 1000, // 15 minutes
+
+    max: 10,
+
+    message: {
+        message:
+        "Too many login attempts. Try again later."
+    }
+
+});
+
+// ================= AUTH ROUTES =================
+
+// REGISTER
+router.post(
+    "/register",
+    register
 );
 
-// ================= EMPLOYEE HISTORY =================
-router.get(
-    "/employee-history/:id",
-    authMiddleware,
-    controller.getEmployeeHistory
+// LOGIN
+router.post(
+    "/login",
+    loginLimiter,
+    login
 );
 
 module.exports = router;

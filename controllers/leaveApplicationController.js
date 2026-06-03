@@ -1,121 +1,212 @@
-const model = require("../models/leaveApplicationModel");
+const logger = require("../utils/logger");
 
-// ================= HELPER: CALCULATE DAYS =================
-const calculateDays = (from, to) => {
-    const start = new Date(from);
-    const end = new Date(to);
-
-    const diff = end - start;
-    return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
-};
+const service =
+require("../services/leaveApplicationService");
 
 // ================= APPLY LEAVE =================
-const applyLeave = async (req, res) => {
+
+const applyLeave =
+async (req, res) => {
+
     try {
-        const {
-            employee_id,
-            leave_type_id,
-            from_date,
-            to_date,
-            reason
-        } = req.body;
 
-        if (!employee_id || !leave_type_id || !from_date || !to_date) {
-            return res.status(400).json({
-                message: "Missing required fields"
-            });
-        }
-
-        const total_days = calculateDays(from_date, to_date);
-
-        const application = await model.createApplication(
-            employee_id,
-            leave_type_id,
-            from_date,
-            to_date,
-            reason,
-            total_days
+        const application =
+        await service.applyLeave(
+            req.body
         );
 
-        res.status(201).json(application);
+        res.status(201).json(
+            application
+        );
 
-    } catch (error) {
-        console.error("APPLY LEAVE ERROR:", error);
-        res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
     }
+
+    catch (error) {
+
+        logger.error(error);
+
+        const status =
+
+            error.message.includes("not found") ||
+            error.message.includes("Missing") ||
+            error.message.includes("Invalid") ||
+            error.message.includes("Insufficient")
+
+            ? 400
+            : 500;
+
+        res.status(status).json({
+
+            message:
+            error.message
+
+        });
+
+    }
+
 };
 
 // ================= GET ALL =================
-const getAll = async (req, res) => {
+
+const getAll =
+async (req, res) => {
+
     try {
-        const data = await model.getAll();
-        res.status(200).json(data);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+
+        const data =
+        await service.getAll();
+
+        res.status(200).json(
+            data
+        );
+
     }
+
+    catch (error) {
+
+        logger.error(error);
+
+        res.status(500).json({
+
+            message:
+            "Server error"
+
+        });
+
+    }
+
 };
 
 // ================= GET BY EMPLOYEE =================
-const getByEmployee = async (req, res) => {
+
+const getByEmployee =
+async (req, res) => {
+
     try {
-        const { employeeId } = req.params;
 
-        const data = await model.getByEmployee(employeeId);
+        const { employeeId } =
+        req.params;
 
-        res.status(200).json(data);
+        const data =
+        await service.getByEmployee(
+            employeeId
+        );
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        res.status(200).json(
+            data
+        );
+
     }
+
+    catch (error) {
+
+        logger.error(error);
+
+        res.status(500).json({
+
+            message:
+            "Server error"
+
+        });
+
+    }
+
 };
 
 // ================= APPROVE / REJECT =================
-const updateStatus = async (req, res) => {
+
+const updateStatus =
+async (req, res) => {
+
     try {
-        const { id } = req.params;
-        const { status } = req.body;
 
-        if (!["APPROVED", "REJECTED"].includes(status)) {
-            return res.status(400).json({
-                message: "Invalid status"
-            });
-        }
+        const { id } =
+        req.params;
 
-        const updated = await model.updateStatus(id, status);
+        const { status } =
+        req.body;
 
-        res.status(200).json(updated);
+        const updated =
+        await service.updateStatus(
+            id,
+            status
+        );
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        res.status(200).json(
+            updated
+        );
+
     }
+
+    catch (error) {
+
+        logger.error(error);
+
+        res.status(400).json({
+
+            message:
+            error.message
+
+        });
+
+    }
+
 };
 
 // ================= CANCEL LEAVE =================
-const cancelLeave = async (req, res) => {
+
+const cancelLeave =
+async (req, res) => {
+
     try {
-        const { id } = req.params;
-        const { cancel_reason } = req.body;
 
-        const updated = await model.cancelLeave(id, cancel_reason);
+        const { id } =
+        req.params;
 
-        res.status(200).json(updated);
+        const {
+            cancel_reason
+        } = req.body;
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        const updated =
+        await service.cancelLeave(
+
+            id,
+
+            cancel_reason
+
+        );
+
+        res.status(200).json(
+            updated
+        );
+
     }
+
+    catch (error) {
+
+        logger.error(error);
+
+        res.status(400).json({
+
+            message:
+            error.message
+
+        });
+
+    }
+
 };
 
 module.exports = {
+
     applyLeave,
+
     getAll,
+
     getByEmployee,
+
     updateStatus,
+
     cancelLeave
+
 };

@@ -10,12 +10,13 @@ require("../middleware/authMiddleware");
 const roleMiddleware =
 require("../middleware/roleMiddleware");
 
-// ================= ROUTE =================
 router.post(
-    "/:applicationId",
-    authMiddleware,
-    roleMiddleware(["HR", "Manager"]),
-    controller.registerLeave
+"/:applicationId",
+authMiddleware,
+roleMiddleware(
+["HR","Manager"]
+),
+controller.registerLeave
 );
 
 module.exports = router;

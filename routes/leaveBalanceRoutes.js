@@ -1,21 +1,45 @@
-const express = require("express");
-const router = express.Router();
+const express =
+require(
+"express"
+);
 
-const controller = require("../controllers/leaveBalanceController");
-const authMiddleware = require("../middleware/authMiddleware");
+const router =
+express.Router();
 
-// GET BALANCE
+const controller =
+require(
+"../controllers/leaveBalanceController"
+);
+
+const authMiddleware =
+require(
+"../middleware/authMiddleware"
+);
+
+
+// ================= GET BALANCE =================
 router.get(
-    "/:employee_id",
-    authMiddleware,
-    controller.getBalance
+
+"/:employee_id",
+
+authMiddleware,
+
+controller.getBalance
+
 );
 
-// UPDATE BALANCE
+
+// ================= UPDATE BALANCE =================
 router.put(
-    "/update/:employee_id",
-    authMiddleware,
-    controller.updateBalance
+
+"/update/:employee_id",
+
+authMiddleware,
+
+controller.updateBalance
+
 );
 
-module.exports = router;
+
+module.exports =
+router;

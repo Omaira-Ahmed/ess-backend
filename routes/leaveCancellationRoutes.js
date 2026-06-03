@@ -1,15 +1,23 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/leaveCancellationController");
-const authMiddleware = require("../middleware/authMiddleware");
-const roleMiddleware = require("../middleware/roleMiddleware");
+const controller = require(
+    "../controllers/leaveCancellationController"
+);
+
+const authMiddleware = require(
+    "../middleware/authMiddleware"
+);
+
+const roleMiddleware = require(
+    "../middleware/roleMiddleware"
+);
 
 console.log("LEAVE CANCELLATION ROUTES LOADED");
 
 // TEST
 router.get("/test", (req, res) => {
-    res.send("Leave cancellation working");
+    res.send("Leave cancellation routes working");
 });
 
 // CANCEL LEAVE

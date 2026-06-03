@@ -73,9 +73,50 @@ const getApprovalHistory = async (applicationId) => {
     return result.rows;
 };
 
+const getByApplicationId = async (applicationId) => {
+    const result = await db.query(
+        `SELECT *
+         FROM leave_requests
+         WHERE application_id = $1
+         ORDER BY action_time DESC`,
+        [applicationId]
+    );
+
+    return result.rows;
+};
+
+// ================= GET LEAVE TYPE =================
+
+const getLeaveType =
+async (leave_type_id) => {
+
+    const result =
+    await db.query(
+
+        `SELECT *
+         FROM leave_types
+         WHERE leave_type_id = $1`,
+
+        [leave_type_id]
+
+    );
+
+    return result.rows[0];
+
+};
+
 module.exports = {
+
     getPendingRequests,
+
     updateLeaveStatus,
+
     insertActionLog,
-    getApprovalHistory
+
+    getApprovalHistory,
+
+    getByApplicationId,
+
+    getLeaveType
+
 };

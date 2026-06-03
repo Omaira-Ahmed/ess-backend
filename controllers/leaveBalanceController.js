@@ -1,50 +1,189 @@
-const model = require("../models/leaveBalanceModel");
+const model =
+require(
+"../models/leaveBalanceModel"
+);
 
-// GET BALANCE
-const getBalance = async (req, res) => {
-    try {
-        const { employee_id } = req.params;
 
-        const data = await model.getBalance(employee_id);
+// ================= GET BALANCE =================
+const getBalance =
+async (
+req,
+res
+)=>{
 
-        return res.json({
-            message: "Leave balance fetched",
-            data
+try{
+
+    const employee_id =
+    parseInt(
+    req.params.employee_id
+    );
+
+    if(
+    isNaN(
+    employee_id
+    )
+    ){
+
+        return res
+        .status(400)
+        .json({
+
+            message:
+            "Invalid employee id"
+
         });
 
-    } catch (error) {
-        return res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
     }
+
+    const balance =
+    await model
+    .getBalance(
+        employee_id
+    );
+
+    res.status(200)
+    .json({
+
+        message:
+        "Leave balance fetched",
+
+        data:
+        balance
+
+    });
+
+}
+
+catch(error){
+
+    res.status(500)
+    .json({
+
+        message:
+        "Server error",
+
+        error:
+        error.message
+
+    });
+
+}
+
 };
 
-// UPDATE BALANCE (used when leave is approved)
-const updateBalance = async (req, res) => {
-    try {
-        const { employee_id } = req.params;
-        const { used_days } = req.body;
 
-        const updated = await model.updateBalance(
-            employee_id,
-            used_days
-        );
+// ================= UPDATE BALANCE =================
+const updateBalance =
+async(
+req,
+res
+)=>{
 
-        return res.json({
-            message: "Balance updated",
-            data: updated
+try{
+
+    const employee_id =
+    parseInt(
+    req.params.employee_id
+    );
+
+    const {
+        leave_days
+    } = req.body;
+
+
+    if(
+    isNaN(employee_id)
+    ){
+
+        return res
+        .status(400)
+        .json({
+
+            message:
+            "Invalid employee id"
+
         });
 
-    } catch (error) {
-        return res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
     }
+
+
+    if(
+    leave_days === undefined
+    ){
+
+        return res
+        .status(400)
+        .json({
+
+            message:
+            "leave_days required"
+
+        });
+
+    }
+
+
+    const updated =
+    await model
+    .updateBalance(
+
+        employee_id,
+
+        leave_days
+
+    );
+
+
+    if(
+    !updated
+    ){
+
+        return res
+        .status(404)
+        .json({
+
+            message:
+            "Balance record not found"
+
+        });
+
+    }
+
+
+    res.status(200)
+    .json({
+
+        message:
+        "Balance updated",
+
+        data:
+        updated
+
+    });
+
+}
+
+catch(error){
+
+    res.status(500)
+    .json({
+
+        message:
+        "Server error",
+
+        error:
+        error.message
+
+    });
+
+}
+
 };
 
-module.exports = {
-    getBalance,
-    updateBalance
+
+module.exports={
+
+getBalance,
+updateBalance
+
 };
