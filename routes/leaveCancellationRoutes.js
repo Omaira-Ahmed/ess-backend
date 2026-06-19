@@ -13,7 +13,13 @@ const roleMiddleware = require(
     "../middleware/roleMiddleware"
 );
 
-console.log("LEAVE CANCELLATION ROUTES LOADED");
+
+const logger =
+require("../utils/logger");
+
+logger.info(
+"LEAVE CANCELLATION ROUTES LOADED"
+);
 
 // TEST
 router.get("/test", (req, res) => {

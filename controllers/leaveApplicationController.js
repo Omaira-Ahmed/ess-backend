@@ -1,4 +1,8 @@
-const logger = require("../utils/logger");
+const RESPONSE =
+require("../utils/responseMessages");
+
+const audit =
+require("../utils/auditLogger");
 
 const service =
 require("../services/leaveApplicationService");
@@ -6,41 +10,31 @@ require("../services/leaveApplicationService");
 // ================= APPLY LEAVE =================
 
 const applyLeave =
-async (req, res) => {
+async (req, res, next) => {
 
     try {
 
-        const application =
+        const result =
         await service.applyLeave(
             req.body
         );
 
-        res.status(201).json(
-            application
+        audit(
+            `Leave application created: ${result.data.application_id}`
         );
+
+        res.status(201).json({
+            message:
+                RESPONSE.LEAVE_APPLICATION.CREATED,
+            data:
+                result.data
+        });
 
     }
 
     catch (error) {
 
-        logger.error(error);
-
-        const status =
-
-            error.message.includes("not found") ||
-            error.message.includes("Missing") ||
-            error.message.includes("Invalid") ||
-            error.message.includes("Insufficient")
-
-            ? 400
-            : 500;
-
-        res.status(status).json({
-
-            message:
-            error.message
-
-        });
+        next(error);
 
     }
 
@@ -49,7 +43,7 @@ async (req, res) => {
 // ================= GET ALL =================
 
 const getAll =
-async (req, res) => {
+async (req, res, next) => {
 
     try {
 
@@ -64,14 +58,7 @@ async (req, res) => {
 
     catch (error) {
 
-        logger.error(error);
-
-        res.status(500).json({
-
-            message:
-            "Server error"
-
-        });
+        next(error);
 
     }
 
@@ -80,7 +67,7 @@ async (req, res) => {
 // ================= GET BY EMPLOYEE =================
 
 const getByEmployee =
-async (req, res) => {
+async (req, res, next) => {
 
     try {
 
@@ -100,15 +87,7 @@ async (req, res) => {
 
     catch (error) {
 
-        logger.error(error);
-
-        res.status(500).json({
-
-            message:
-            "Server error"
-
-        });
-
+        next(error);
     }
 
 };
@@ -116,7 +95,7 @@ async (req, res) => {
 // ================= APPROVE / REJECT =================
 
 const updateStatus =
-async (req, res) => {
+async (req, res, next) => {
 
     try {
 
@@ -132,6 +111,10 @@ async (req, res) => {
             status
         );
 
+        audit(
+            `Leave application status changed: ${id} -> ${status}`
+        );
+
         res.status(200).json(
             updated
         );
@@ -140,14 +123,7 @@ async (req, res) => {
 
     catch (error) {
 
-        logger.error(error);
-
-        res.status(400).json({
-
-            message:
-            error.message
-
-        });
+        next(error);
 
     }
 
@@ -156,7 +132,7 @@ async (req, res) => {
 // ================= CANCEL LEAVE =================
 
 const cancelLeave =
-async (req, res) => {
+async (req, res, next) => {
 
     try {
 
@@ -176,6 +152,10 @@ async (req, res) => {
 
         );
 
+        audit(
+            `Leave application cancelled: ${id}`
+        );
+
         res.status(200).json(
             updated
         );
@@ -184,14 +164,7 @@ async (req, res) => {
 
     catch (error) {
 
-        logger.error(error);
-
-        res.status(400).json({
-
-            message:
-            error.message
-
-        });
+        next(error);
 
     }
 

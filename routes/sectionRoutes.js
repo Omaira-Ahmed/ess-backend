@@ -1,4 +1,9 @@
-console.log("Section routes loaded");
+const logger =
+require("../utils/logger");
+
+logger.info(
+"Section routes loaded"
+);
 
 const express = require("express");
 

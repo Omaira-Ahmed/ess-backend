@@ -42,12 +42,10 @@ async (email) => {
         `SELECT
 
         u.user_id,
-
         u.email,
-
         u.password_hash,
-
-        r.role_name AS role
+        r.role_name AS role,
+        e.employee_id
 
         FROM users u
 
@@ -56,6 +54,9 @@ async (email) => {
 
         LEFT JOIN roles r
         ON ur.role_id = r.id
+
+        LEFT JOIN employees e
+        ON u.user_id = e.user_id
 
         WHERE u.email = $1`,
 

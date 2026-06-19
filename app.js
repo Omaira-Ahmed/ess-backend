@@ -5,7 +5,8 @@ const cors = require("cors");
 const helmet = require("helmet");
 
 const logger = require("./utils/logger");
-
+const requestLogger =
+require("./middleware/requestLogger");
 const app = express(); // ✅ MUST BE FIRST
 
 // ================= SECURITY =================
@@ -24,6 +25,8 @@ app.use(
 
 // ================= BODY =================
 app.use(express.json());
+
+app.use(requestLogger);
 
 // ================= ROUTES =================
 app.use("/api/v1/auth", require("./routes/authRoutes"));
@@ -59,15 +62,9 @@ app.use((req, res) => {
 });
 
 // ================= ERROR HANDLER =================
-app.use((err, req, res, next) => {
+const errorHandler =
+require("./middleware/errorHandler");
 
-    logger.error(err.message);
-
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || "Internal server error"
-    });
-
-});
+app.use(errorHandler);
 
 module.exports = app;

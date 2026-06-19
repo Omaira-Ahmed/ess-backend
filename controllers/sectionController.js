@@ -1,6 +1,11 @@
 const sectionModel = require("../models/sectionModel");
+const logger = require("../utils/logger");
+const RESPONSE =
+require("../utils/responseMessages");
 
-const createSection = async (req, res) => {
+const audit =
+require("../utils/auditLogger");
+const createSection = async (req, res, next) => {
 
     try {
 
@@ -10,14 +15,16 @@ const createSection = async (req, res) => {
             department_id
         } = req.body;
 
-        if (
-            !code ||
-            !section_name ||
-            !department_id
-        ) {
+        if (!code ||!section_name ||!department_id) {
+
+            logger.warn(
+                "Section creation attempted with missing fields"
+            );
+
             return res.status(400).json({
-                message: "All fields are required"
+                message:RESPONSE.SECTION.REQUIRED_FIELDS
             });
+
         }
 
         const section =
@@ -27,19 +34,19 @@ const createSection = async (req, res) => {
                 department_id
             );
 
+        audit(
+            `Section created: ${code}`
+        );
+
         res.status(201).json(section);
 
     } catch (error) {
 
-        console.error(error);
-
-        res.status(500).json({
-            message: "Server error"
-        });
+        next(error);
     }
 };
 
-const getSections = async (req, res) => {
+const getSections = async (req, res, next) => {
 
     try {
 
@@ -50,11 +57,7 @@ const getSections = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
-
-        res.status(500).json({
-            message: "Server error"
-        });
+        next(error);
     }
 };
 

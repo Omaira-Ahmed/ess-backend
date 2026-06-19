@@ -1,43 +1,75 @@
-console.log("Auth routes loaded");
+const express =
+require("express");
 
-const express = require("express");
-const router = express.Router();
+const router =
+express.Router();
 
-const rateLimit = require("express-rate-limit");
+const controller =
+require("../controllers/auditController");
 
-const {
-    register,
-    login
-} = require("../controllers/authController");
+const authMiddleware =
+require("../middleware/authMiddleware");
 
-// ================= LOGIN RATE LIMITER =================
+const roleMiddleware =
+require("../middleware/roleMiddleware");
 
-const loginLimiter = rateLimit({
+// ================= EMPLOYEE =================
 
-    windowMs: 15 * 60 * 1000, // 15 minutes
-
-    max: 10,
-
-    message: {
-        message:
-        "Too many login attempts. Try again later."
-    }
-
-});
-
-// ================= AUTH ROUTES =================
-
-// REGISTER
-router.post(
-    "/register",
-    register
+router.get(
+"/my-leaves",
+authMiddleware,
+controller.getMyLeaveHistory
 );
 
-// LOGIN
-router.post(
-    "/login",
-    loginLimiter,
-    login
+router.get(
+"/balances",
+authMiddleware,
+controller.getEmployeeBalances
 );
 
-module.exports = router;
+// ================= HR =================
+
+router.get(
+
+"/leave-history",
+
+authMiddleware,
+
+roleMiddleware(
+["HR"]
+),
+
+controller.getAllLeaveHistory
+
+);
+
+router.get(
+
+"/leave-logs",
+
+authMiddleware,
+
+roleMiddleware(
+["HR"]
+),
+
+controller.getLeaveLogs
+
+);
+
+router.get(
+
+"/employee-history/:employeeId",
+
+authMiddleware,
+
+roleMiddleware(
+["HR"]
+),
+
+controller.getEmployeeHistory
+
+);
+
+module.exports =
+router;

@@ -1,6 +1,8 @@
 const db = require("../config/db");
 const audit = require("../models/auditModel");
 const model = require("../models/leaveApprovalModel");
+const RESPONSE =
+require("../utils/responseMessages");
 
 // ================= GET PENDING =================
 
@@ -25,6 +27,16 @@ async (
     remarks = ""
 
 ) => {
+    if (!applicationId) {
+
+        const error = new Error(
+            RESPONSE.LEAVE_APPROVAL.INVALID_APPLICATION_ID
+        );
+
+        error.status = 400;
+
+        throw error;
+    }
 
     const client =
     await db.connect();
@@ -50,9 +62,13 @@ async (
 
         if (!application) {
 
-            throw new Error(
-                "Application not found"
+            const error = new Error(
+                RESPONSE.LEAVE_APPROVAL.NOT_FOUND
             );
+
+            error.status = 404;
+
+            throw error;
 
         }
 
@@ -61,9 +77,13 @@ async (
             "PENDING"
         ) {
 
-            throw new Error(
-                "Leave already processed"
+            const error = new Error(
+                RESPONSE.LEAVE_APPROVAL.ALREADY_PROCESSED
             );
+
+            error.status = 400;
+
+            throw error;
 
         }
 
@@ -85,9 +105,13 @@ async (
 
         if (!leaveType) {
 
-            throw new Error(
-                "Leave type not found"
+            const error = new Error(
+                RESPONSE.LEAVE_APPROVAL.LEAVE_TYPE_NOT_FOUND
             );
+
+            error.status = 404;
+
+            throw error;
 
         }
 
@@ -126,9 +150,13 @@ async (
 
             if (!balance) {
 
-                throw new Error(
-                    "Leave balance not found"
+                const error = new Error(
+                    RESPONSE.LEAVE_APPROVAL.BALANCE_NOT_FOUND
                 );
+
+                error.status = 404;
+
+                throw error;
 
             }
 
@@ -160,9 +188,13 @@ async (
 
             ) {
 
-                throw new Error(
-                    "Insufficient leave balance"
+                const error = new Error(
+                    RESPONSE.LEAVE_APPROVAL.INSUFFICIENT_BALANCE
                 );
+
+                error.status = 400;
+
+                throw error;
 
             }
 
@@ -276,6 +308,16 @@ async (
     remarks = ""
 
 ) => {
+    if (!applicationId) {
+
+        const error = new Error(
+            RESPONSE.LEAVE_APPROVAL.INVALID_APPLICATION_ID
+        );
+
+        error.status = 400;
+
+        throw error;
+    }
 
     const client =
     await db.connect();
@@ -303,9 +345,13 @@ async (
 
         if (!application) {
 
-            throw new Error(
-                "Application not found"
+            const error = new Error(
+                RESPONSE.LEAVE_APPROVAL.NOT_FOUND
             );
+
+            error.status = 404;
+
+            throw error;
 
         }
 
@@ -314,9 +360,13 @@ async (
             "PENDING"
         ) {
 
-            throw new Error(
-                "Leave already processed"
+            const error = new Error(
+                RESPONSE.LEAVE_APPROVAL.ALREADY_PROCESSED
             );
+
+            error.status = 400;
+
+            throw error;
 
         }
 
@@ -403,6 +453,17 @@ async (
 
 const getApprovalHistory =
 async (applicationId) => {
+
+    if (!applicationId) {
+
+        const error = new Error(
+            RESPONSE.LEAVE_APPROVAL.INVALID_APPLICATION_ID
+        );
+
+        error.status = 400;
+
+        throw error;
+    }
 
     return await model.getApprovalHistory(
         applicationId

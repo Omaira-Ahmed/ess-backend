@@ -7,7 +7,13 @@ const departmentController = require(
 );
 const authMiddleware = require("../middleware/authMiddleware");
 
-console.log("DEPARTMENT ROUTES LOADED");
+
+const logger =
+require("../utils/logger");
+
+logger.info(
+"DEPARTMENT ROUTES LOADED"
+);
 
 router.post("/", authMiddleware, departmentController.createDepartment);
 

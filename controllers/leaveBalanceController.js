@@ -3,13 +3,18 @@ require(
 "../models/leaveBalanceModel"
 );
 
+const logger =
+require("../utils/logger");
+
+const RESPONSE =
+require("../utils/responseMessages");
+
+const audit =
+require("../utils/auditLogger");
+
 
 // ================= GET BALANCE =================
-const getBalance =
-async (
-req,
-res
-)=>{
+const getBalance = async (req, res, next)=>{
 
 try{
 
@@ -19,17 +24,18 @@ try{
     );
 
     if(
-    isNaN(
-    employee_id
-    )
+        isNaN(employee_id)
     ){
+        logger.warn(
+            `Invalid employee id: ${req.params.employee_id}`
+        );
 
         return res
         .status(400)
         .json({
 
             message:
-            "Invalid employee id"
+            RESPONSE.LEAVE_BALANCE.INVALID_EMPLOYEE_ID
 
         });
 
@@ -45,7 +51,7 @@ try{
     .json({
 
         message:
-        "Leave balance fetched",
+        RESPONSE.LEAVE_BALANCE.FETCHED,
 
         data:
         balance
@@ -56,16 +62,7 @@ try{
 
 catch(error){
 
-    res.status(500)
-    .json({
-
-        message:
-        "Server error",
-
-        error:
-        error.message
-
-    });
+     next(error);
 
 }
 
@@ -73,11 +70,7 @@ catch(error){
 
 
 // ================= UPDATE BALANCE =================
-const updateBalance =
-async(
-req,
-res
-)=>{
+const updateBalance = async(req, res, next)=>{
 
 try{
 
@@ -92,15 +85,18 @@ try{
 
 
     if(
-    isNaN(employee_id)
+        isNaN(employee_id)
     ){
+        logger.warn(
+            `Invalid employee id: ${req.params.employee_id}`
+        );
 
         return res
         .status(400)
         .json({
 
             message:
-            "Invalid employee id"
+            RESPONSE.LEAVE_BALANCE.INVALID_EMPLOYEE_ID
 
         });
 
@@ -108,15 +104,18 @@ try{
 
 
     if(
-    leave_days === undefined
+        leave_days === undefined
     ){
+        logger.warn(
+            "Balance update attempted without leave_days"
+        );
 
         return res
         .status(400)
         .json({
 
             message:
-            "leave_days required"
+            RESPONSE.LEAVE_BALANCE.LEAVE_DAYS_REQUIRED
 
         });
 
@@ -135,7 +134,7 @@ try{
 
 
     if(
-    !updated
+        !updated
     ){
 
         return res
@@ -143,18 +142,22 @@ try{
         .json({
 
             message:
-            "Balance record not found"
+            RESPONSE.LEAVE_BALANCE.NOT_FOUND
 
         });
 
     }
+
+    audit(
+        `Balance updated: Employee ${employee_id}, Days ${leave_days}`
+    );
 
 
     res.status(200)
     .json({
 
         message:
-        "Balance updated",
+        RESPONSE.LEAVE_BALANCE.UPDATED,
 
         data:
         updated
@@ -165,16 +168,7 @@ try{
 
 catch(error){
 
-    res.status(500)
-    .json({
-
-        message:
-        "Server error",
-
-        error:
-        error.message
-
-    });
+     next(error);
 
 }
 

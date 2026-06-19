@@ -3,8 +3,14 @@ const logger = require("../utils/logger");
 const service =
 require("../services/leaveApprovalService");
 
+const RESPONSE =
+require("../utils/responseMessages");
+
+const audit =
+require("../utils/auditLogger");
+
 // ================= GET PENDING =================
-const getPendingRequests = async (req, res) => {
+const getPendingRequests = async (req, res, next) => {
     try {
         const managerId = parseInt(req.params.managerId);
 
@@ -13,22 +19,17 @@ const getPendingRequests = async (req, res) => {
         );
 
         res.status(200).json({
-            message: "Pending requests fetched",
+            message: RESPONSE.LEAVE_APPROVAL.PENDING_FETCHED,
             data: requests
         });
 
     } catch (error) {
-        logger.error(error);
-
-        res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
+        next(error);
     }
 };
 
 // ================= APPROVE =================
-const approveLeave = async (req, res) => {
+const approveLeave = async (req, res, next) => {
     try {
         const applicationId = parseInt(req.params.applicationId);
         const remarks = req.body.remarks || "";
@@ -40,22 +41,22 @@ const approveLeave = async (req, res) => {
             remarks
         );
 
+        audit(
+            `Leave approved: Application ${applicationId} by User ${userId}`
+        );
+
         res.status(200).json({
-            message: "Leave approved successfully",
+            message: RESPONSE.LEAVE_APPROVAL.APPROVED,
             data: result
         });
 
     } catch (error) {
-        logger.error(error);
-
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 };
 
 // ================= REJECT =================
-const rejectLeave = async (req, res) => {
+const rejectLeave = async (req, res, next) => {
     try {
         const applicationId = parseInt(req.params.applicationId);
         const remarks = req.body.remarks || "";
@@ -67,19 +68,19 @@ const rejectLeave = async (req, res) => {
             remarks
         );
 
+        audit(
+            `Leave rejected: Application ${applicationId} by User ${userId}`
+        );
+
         res.status(200).json(result);
 
     } catch (error) {
-        logger.error(error);
-
-        res.status(400).json({
-            message: error.message
-        });
+        next(error);
     }
 };
 
 // ================= HISTORY =================
-const getApprovalHistory = async (req, res) => {
+const getApprovalHistory = async (req, res, next) => {
     try {
         const applicationId = parseInt(req.params.applicationId);
 
@@ -89,17 +90,12 @@ const getApprovalHistory = async (req, res) => {
         );
 
         res.status(200).json({
-            message: "History fetched",
+            message: RESPONSE.LEAVE_APPROVAL.HISTORY_FETCHED,
             data: history
         });
 
     } catch (error) {
-        logger.error(error);
-
-        res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
+        next(error);
     }
 };
 

@@ -5,10 +5,16 @@ require(
     "../services/leaveRegistrationService"
 );
 
+const RESPONSE =
+require("../utils/responseMessages");
+
+const audit =
+require("../utils/auditLogger");
+
 // ================= REGISTER LEAVE =================
 
 const registerLeave =
-async (req, res) => {
+async (req, res, next) => {
 
     try {
 
@@ -22,19 +28,22 @@ async (req, res) => {
             isNaN(applicationId)
         ) {
 
+            logger.warn(
+                `Invalid application id: ${req.params.applicationId}`
+            );
+
             return res
             .status(400)
             .json({
 
-                message:
-                "Invalid application id"
+                message:RESPONSE.LEAVE_REGISTRATION.INVALID_APPLICATION_ID
 
             });
 
         }
 
         const approverId =
-        req.user.user_id;
+        req.user.employee_id;
 
         const registration =
         await service.registerLeave(
@@ -45,10 +54,14 @@ async (req, res) => {
 
         );
 
+        audit(
+            `Leave registered: Application ${applicationId} by Employee ${approverId}`
+        );
+
         res.status(201).json({
 
             message:
-            "Leave registered successfully",
+            RESPONSE.LEAVE_REGISTRATION.REGISTERED,
 
             data:
             registration
@@ -59,14 +72,7 @@ async (req, res) => {
 
     catch (error) {
 
-        logger.error(error);
-
-        res.status(400).json({
-
-            message:
-            error.message
-
-        });
+        next(error);
 
     }
 

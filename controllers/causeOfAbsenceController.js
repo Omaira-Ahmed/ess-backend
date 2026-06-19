@@ -1,7 +1,12 @@
 const causeModel = require("../models/causeOfAbsenceModel");
+const logger = require("../utils/logger");
+const RESPONSE =
+require("../utils/responseMessages");
 
+const audit =
+require("../utils/auditLogger");
 // ================= CREATE =================
-const createCause = async (req, res) => {
+const createCause = async (req, res, next) => {
     try {
         const {
             code,
@@ -14,8 +19,11 @@ const createCause = async (req, res) => {
         } = req.body;
 
         if (!code || !description || !leave_type_id) {
+            logger.warn(
+                "Cause creation attempted with missing fields"
+            );
             return res.status(400).json({
-                message: "code, description and leave_type_id are required"
+                message:RESPONSE.CAUSE.REQUIRED_FIELDS
             });
         }
 
@@ -28,47 +36,47 @@ const createCause = async (req, res) => {
             max_days_per_year,
             status ?? true
         );
-
+        audit(`Cause created: ${code}`);
         res.status(201).json(cause);
 
     } catch (error) {
-        console.error("CREATE CAUSE ERROR:", error);
-        res.status(500).json({ message: "Server error" });
+        
+        next(error);
     }
 };
 
 // ================= GET ALL =================
-const getCauses = async (req, res) => {
+const getCauses = async (req, res, next) => {
     try {
         const causes = await causeModel.getCauses();
         res.status(200).json(causes);
     } catch (error) {
-        console.error("GET CAUSES ERROR:", error);
-        res.status(500).json({ message: "Server error" });
+        
+        next(error);
     }
 };
 
 // ================= GET BY ID =================
-const getCauseById = async (req, res) => {
+const getCauseById = async (req, res, next) => {
     try {
         const { id } = req.params;
 
         const cause = await causeModel.getCauseById(id);
 
         if (!cause) {
-            return res.status(404).json({ message: "Cause not found" });
+            return res.status(404).json({ message: RESPONSE.CAUSE.NOT_FOUND });
         }
 
         res.status(200).json(cause);
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        
+        next(error);
     }
 };
 
 // ================= UPDATE =================
-const updateCause = async (req, res) => {
+const updateCause = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { description, max_days_per_year, status } = req.body;
@@ -79,30 +87,31 @@ const updateCause = async (req, res) => {
             max_days_per_year,
             status
         );
-
+        audit(`Cause updated: ${id}`);
         res.status(200).json(updated);
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        
+        next(error);
     }
 };
 
 // ================= DEACTIVATE =================
-const deactivateCause = async (req, res) => {
+const deactivateCause = async (req, res, next) => {
     try {
         const { id } = req.params;
 
         const updated = await causeModel.deactivateCause(id);
-
+        audit(`Cause deactivated: ${id}`);
         res.status(200).json({
-            message: "Cause deactivated",
+            message: RESPONSE.CAUSE.DEACTIVATED,
             data: updated
         });
+        
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+        
+        next(error);
     }
 };
 

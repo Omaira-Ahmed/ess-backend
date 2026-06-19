@@ -1,35 +1,41 @@
 const employeeModel = require("../models/employeeModel");
 
-const createEmployee = async (req, res) => {
+const RESPONSE =
+require("../utils/responseMessages");
+
+const audit =
+require("../utils/auditLogger");
+const createEmployee = async (req, res, next) => {
     try {
 
         const employee = await employeeModel.createEmployee(req.body);
 
+        audit(
+            `Employee created: ${employee.employee_id}`
+        );
+
         res.status(201).json({
-            message: "Employee created successfully",
+            message: RESPONSE.EMPLOYEE.CREATED,
             employee
         });
 
     } catch (err) {
 
-        console.error(err);
-
-        res.status(500).json({
-            message: "Error creating employee"
-        });
+        next(err);
     }
 };
 
-const getEmployeeById = async (req, res) => {
+const getEmployeeById = async (req, res, next) => {
     try {
 
         const employee = await employeeModel.getEmployeeById(
             req.params.id
         );
 
+
         if (!employee) {
             return res.status(404).json({
-                message: "Employee not found"
+                message: RESPONSE.EMPLOYEE.NOT_FOUND
             });
         }
 
@@ -37,11 +43,7 @@ const getEmployeeById = async (req, res) => {
 
     } catch (err) {
 
-        console.error(err);
-
-        res.status(500).json({
-            message: "Error fetching employee"
-        });
+        next(err);
     }
 };
 

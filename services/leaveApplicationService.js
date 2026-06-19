@@ -1,3 +1,6 @@
+const RESPONSE =
+require("../utils/responseMessages");
+
 const model =
 require(
     "../models/leaveApplicationModel"
@@ -21,9 +24,13 @@ new Date(to_date);
 
 if(endDate < startDate){
 
-throw new Error(
-"End date cannot be before start date"
-);
+    const error = new Error(
+        RESPONSE.LEAVE_APPLICATION.INVALID_DATE_RANGE
+    );
+
+    error.status = 400;
+
+    throw error;
 
 }
 
@@ -51,10 +58,13 @@ end - start
 
 if(hours <= 0){
 
-throw new Error(
-"Invalid leave time range"
-);
+    const error = new Error(
+        RESPONSE.LEAVE_APPLICATION.INVALID_TIME_RANGE
+    );
 
+    error.status = 400;
+
+    throw error;
 }
 
 return {
@@ -120,9 +130,13 @@ async (data) => {
 
     ) {
 
-        throw new Error(
-            "Missing required fields"
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.REQUIRED_FIELDS
         );
+
+        error.status = 400;
+
+        throw error;
 
     }
 
@@ -135,9 +149,13 @@ async (data) => {
 
     if (!employee) {
 
-        throw new Error(
-            "Employee not found"
+        const error = new Error(
+            RESPONSE.EMPLOYEE.NOT_FOUND
         );
+
+        error.status = 404;
+
+        throw error;
 
     }
 
@@ -156,11 +174,13 @@ async (data) => {
 
     if (overlap) {
 
-        throw new Error(
-
-            "Leave dates overlap with an existing application"
-
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.OVERLAP
         );
+
+        error.status = 400;
+
+        throw error;
 
     }
 
@@ -193,9 +213,13 @@ async (data) => {
 
     if (!leaveType) {
 
-        throw new Error(
-            "Leave type not found"
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.LEAVE_TYPE_NOT_FOUND
         );
+
+        error.status = 404;
+
+        throw error;
 
     }
 
@@ -217,9 +241,13 @@ async (data) => {
 
         if (!balance) {
 
-            throw new Error(
-                "Leave balance not found"
+            const error = new Error(
+                RESPONSE.LEAVE_APPLICATION.BALANCE_NOT_FOUND
             );
+
+            error.status = 404;
+
+            throw error;
 
         }
 
@@ -249,11 +277,13 @@ async (data) => {
             total_days
         ) {
 
-            throw new Error(
-
-                `Insufficient leave balance. Remaining: ${remaining}`
-
+            const error = new Error(
+                RESPONSE.LEAVE_APPLICATION.INSUFFICIENT_BALANCE
             );
+
+            error.status = 400;
+
+            throw error;
 
         }
 
@@ -279,13 +309,7 @@ async (data) => {
     );
 
     return {
-
-        message:
-        "Leave application created successfully",
-
-        data:
-        application
-
+        data: application
     };
 
 };
@@ -327,9 +351,13 @@ async (id, status) => {
         !allowed.includes(status)
     ) {
 
-        throw new Error(
-            "Invalid status"
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.INVALID_STATUS
         );
+
+        error.status = 400;
+
+        throw error;
 
     }
 
@@ -350,9 +378,13 @@ async (
 
     if (!reason) {
 
-        throw new Error(
-            "Cancellation reason is required"
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.CANCELLATION_REASON_REQUIRED
         );
+
+        error.status = 400;
+
+        throw error;
 
     }
 
@@ -361,9 +393,13 @@ async (
 
     if (!application) {
 
-        throw new Error(
-            "Application not found"
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.NOT_FOUND
         );
+
+        error.status = 404;
+
+        throw error;
 
     }
 
@@ -372,9 +408,13 @@ async (
         "REJECTED"
     ) {
 
-        throw new Error(
-            "Rejected leave cannot be cancelled"
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.REJECTED_CANNOT_CANCEL
         );
+
+        error.status = 400;
+
+        throw error;
 
     }
 
@@ -382,9 +422,13 @@ async (
         application.cancel_requested
     ) {
 
-        throw new Error(
-            "Cancellation already requested"
+        const error = new Error(
+            RESPONSE.LEAVE_APPLICATION.ALREADY_CANCELLED
         );
+
+        error.status = 400;
+
+        throw error;
 
     }
 

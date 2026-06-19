@@ -3,7 +3,13 @@ const router = express.Router();
 
 const controller = require("../controllers/noSeriesController");
 
-console.log("NO SERIES ROUTES LOADED");
+
+const logger =
+require("../utils/logger");
+
+logger.info(
+"NO SERIES ROUTES LOADED"
+);
 
 // CREATE
 router.post("/", controller.createSeries);

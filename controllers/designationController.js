@@ -1,12 +1,23 @@
 const designationModel = require("../models/designationModel");
+const logger = require("../utils/logger");
+const RESPONSE =
+require("../utils/responseMessages");
 
-const createDesignation = async (req, res) => {
+const audit =
+require("../utils/auditLogger");
+const createDesignation = async (req, res, next) => {
     try {
         const { code, designation_name } = req.body;
 
         if (!code || !designation_name) {
+
+            logger.warn(
+                "Designation creation attempted with missing fields"
+            );
+
             return res.status(400).json({
-                message: "Code and designation name are required"
+                message:
+                    RESPONSE.DESIGNATION.REQUIRED_FIELDS
             });
         }
 
@@ -14,33 +25,29 @@ const createDesignation = async (req, res) => {
             code,
             designation_name
         );
+        audit(
+            `Designation created: ${code}`
+        );
 
         res.status(201).json({
-            message: "Designation created successfully",
+            message: 
+                RESPONSE.DESIGNATION.CREATED,
             designation
         });
 
     } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            message: "Server error"
-        });
+        next(error);
     }
 };
 
-const getAllDesignations = async (req, res) => {
+const getAllDesignations = async (req, res, next) => {
     try {
         const designations = await designationModel.getAllDesignations();
 
         res.status(200).json(designations);
 
     } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            message: "Server error"
-        });
+        next(error);
     }
 };
 

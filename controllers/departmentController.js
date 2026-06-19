@@ -1,16 +1,24 @@
 const departmentModel = require("../models/departmentModel");
+const logger = require("../utils/logger");
+const RESPONSE =
+require("../utils/responseMessages");
 
+const audit =
+require("../utils/auditLogger");
 // ================= CREATE DEPARTMENT =================
-const createDepartment = async (req, res) => {
+const createDepartment = async (req, res, next) => {
     try {
-        console.log("CREATE DEPARTMENT HIT");
-        console.log(req.body);
-
+        
         const { code, department_name } = req.body;
 
         if (!code || !department_name) {
+
+            logger.warn(
+                "Department creation attempted with missing fields"
+            );
+
             return res.status(400).json({
-                message: "Code and department name are required"
+                message: RESPONSE.DEPARTMENT.REQUIRED_FIELDS
             });
         }
 
@@ -19,32 +27,28 @@ const createDepartment = async (req, res) => {
             department_name
         );
 
+        audit(
+            `Department created: ${code}`
+        );
+
         res.status(201).json(department);
 
     } catch (error) {
-        console.error("CREATE DEPARTMENT ERROR:", error);
-
-        res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
+        
+        next(error);
     }
 };
 
 // ================= GET ALL DEPARTMENTS =================
-const getDepartments = async (req, res) => {
+const getDepartments = async (req, res, next) => {
     try {
         const departments = await departmentModel.getDepartments();
 
         res.status(200).json(departments);
 
     } catch (error) {
-        console.error("GET DEPARTMENTS ERROR:", error);
-
-        res.status(500).json({
-            message: "Server error",
-            error: error.message
-        });
+        
+        next(error);
     }
 };
 

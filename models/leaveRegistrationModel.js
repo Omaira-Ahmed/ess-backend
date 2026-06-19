@@ -12,7 +12,21 @@ const getApplicationById = async (applicationId) => {
     );
 
     return result.rows[0];
+};
 
+// ================= GET APPLICATION FOR UPDATE =================
+
+const getApplicationForUpdate = async (client, applicationId) => {
+
+    const result = await client.query(
+        `SELECT *
+         FROM leave_application
+         WHERE application_id = $1
+         FOR UPDATE`,
+        [applicationId]
+    );
+
+    return result.rows[0];
 };
 
 // ================= GET NUMBER SERIES =================
@@ -27,35 +41,45 @@ const getNoSeries = async () => {
     );
 
     return result.rows[0];
-
 };
 
-// ================= UPDATE SERIES =================
+// ================= GET SERIES FOR UPDATE =================
 
-const updateSeries = async (id, current_no) => {
+const getSeriesForUpdate = async (client) => {
 
-    await db.query(
-        `UPDATE no_series
-         SET current_no = $1
-         WHERE no_series_id = $2`,
-        [
-            current_no,
-            id
-        ]
+    const result = await client.query(
+        `SELECT *
+         FROM no_series
+         WHERE code = 'LEAVE_REG'
+         FOR UPDATE`
     );
 
+    return result.rows[0];
+};
+
+// ================= INCREMENT SERIES =================
+
+const incrementSeries = async (client, id) => {
+
+    await client.query(
+        `UPDATE no_series
+         SET current_no = current_no + 1
+         WHERE no_series_id = $1`,
+        [id]
+    );
 };
 
 // ================= CREATE REGISTRATION =================
 
 const createRegistration = async (
+    client,
     application,
-    registration_no,
-    approved_by,
-    no_series_id
+    registrationNo,
+    approverId,
+    seriesId
 ) => {
 
-    const result = await db.query(
+    const result = await client.query(
         `INSERT INTO leave_registration
         (
             application_id,
@@ -82,8 +106,8 @@ const createRegistration = async (
         RETURNING *`,
         [
             application.application_id,
-            registration_no,
-            no_series_id,
+            registrationNo,
+            seriesId,
             application.employee_id,
             application.leave_type_id,
             application.from_date,
@@ -92,17 +116,100 @@ const createRegistration = async (
             application.to_time,
             application.total_days,
             application.total_hours,
-            approved_by
+            approverId
         ]
     );
 
     return result.rows[0];
+};
 
+// ================= CREATE REQUEST =================
+
+const createLeaveRequest = async (
+    client,
+    applicationId,
+    approverId
+) => {
+
+    const result = await client.query(
+        `INSERT INTO leave_requests
+        (
+            application_id,
+            action,
+            performed_by,
+            remarks
+        )
+        VALUES
+        ($1,$2,$3,$4)
+        RETURNING request_id`,
+        [
+            applicationId,
+            "REGISTERED",
+            approverId,
+            "Leave registered"
+        ]
+    );
+
+    return result.rows[0];
+};
+
+// ================= INSERT LOG =================
+
+const createLeaveLog = async (
+    client,
+    requestId,
+    approverId
+) => {
+
+    await client.query(
+        `INSERT INTO leave_request_logs
+        (
+            leave_request_id,
+            action,
+            performed_by,
+            remarks
+        )
+        VALUES ($1,$2,$3,$4)`,
+        [
+            requestId,
+            "REGISTERED",
+            approverId,
+            "Leave registered"
+        ]
+    );
+};
+
+// ================= GET EXISTING REGISTRATION =================
+
+const getExistingRegistration = async (client, applicationId) => {
+
+    const result = await client.query(
+        `SELECT registration_id
+         FROM leave_registration
+         WHERE application_id = $1`,
+        [applicationId]
+    );
+
+    return result.rows[0];
+};
+
+// ================= GET REGISTRATION =================
+
+const getRegistrationByApplication = async (applicationId) => {
+
+    const result = await db.query(
+        `SELECT *
+         FROM leave_registration
+         WHERE application_id = $1`,
+        [applicationId]
+    );
+
+    return result.rows[0];
 };
 
 // ================= GET REQUEST =================
 
-const getLeaveRequestByApplication = async (application_id) => {
+const getLeaveRequestByApplication = async (applicationId) => {
 
     const result = await db.query(
         `SELECT request_id
@@ -110,35 +217,30 @@ const getLeaveRequestByApplication = async (application_id) => {
          WHERE application_id = $1
          ORDER BY request_id DESC
          LIMIT 1`,
-        [application_id]
+        [applicationId]
     );
 
     return result.rows[0];
-
 };
 
-// ================= GET REGISTRATION =================
-
-const getRegistrationByApplication = async (application_id) => {
-
-    const result = await db.query(
-        `SELECT *
-         FROM leave_registration
-         WHERE application_id = $1`,
-        [application_id]
-    );
-
-    return result.rows[0];
-
-};
+// ================= EXPORTS =================
 
 module.exports = {
 
     getApplicationById,
+    getApplicationForUpdate,
+
     getNoSeries,
-    updateSeries,
+    getSeriesForUpdate,
+    incrementSeries,
+
     createRegistration,
-    getLeaveRequestByApplication,
-    getRegistrationByApplication
+    createLeaveRequest,
+    createLeaveLog,
+
+    getExistingRegistration,
+
+    getRegistrationByApplication,
+    getLeaveRequestByApplication
 
 };

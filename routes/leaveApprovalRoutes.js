@@ -21,7 +21,10 @@ require(
 "../middleware/roleMiddleware"
 );
 
-console.log(
+const logger =
+require("../utils/logger");
+
+logger.info(
 "LEAVE APPROVAL ROUTES LOADED"
 );
 
